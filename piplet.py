@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import subprocess
 import json
 import sys
@@ -31,7 +33,7 @@ def gather_deprecated_packages(verbose=False):
 
     existing_deprecated = set()
     try:
-        with open('deprecated.txt', 'r') as file:
+        with open('.deprecated.txt', 'r') as file:
             existing_deprecated = {line.strip() for line in file}
     except FileNotFoundError:
         existing_deprecated = set()
