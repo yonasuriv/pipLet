@@ -36,7 +36,7 @@ def gather_deprecated_packages(verbose=False):
     except FileNotFoundError:
         existing_deprecated = set()
 
-    print(f"\n{Colors.BLUE} [*]{Colors.RESET} Checking for deprecated packages...")
+    print(f"\n{Colors.BLUE} [*]{Colors.RESET} Checking for Deprecated Packages..")
 
     new_deprecated_packages = set()
     result = subprocess.run(['pip', 'check'], capture_output=True, text=True)
@@ -78,7 +78,7 @@ def print_deprecated_packages(verbose=True):
         print(f"{Colors.RED}[!]{Colors.RESET} 'deprecated.txt' file not found.")
 
 def upgrade_outdated_packages(verbose=False):
-    print(f"\n{Colors.BLUE} [*]{Colors.RESET} Checking for outdated packages...")
+    print(f"\n{Colors.BLUE} [*]{Colors.RESET} Checking for Outdated Packages..")
     
     result = subprocess.run(['pip', 'list', '--outdated', '--format=json'], capture_output=True, text=True)
     outdated_packages = json.loads(result.stdout)
@@ -91,7 +91,7 @@ def upgrade_outdated_packages(verbose=False):
         
     for package in outdated_packages:
         name = package['name']
-        print(f"{Colors.ORANGE} [>]{Colors.RESET} Upgrading {name} from {package['version']} to {package['latest_version']})")
+        print(f"{Colors.ORANGE} [>]{Colors.RESET} Upgrading {name} {Colors.DGREY}from {package['version']} to {package['latest_version']}{Colors.RESET}")
         if not verbose:
             subprocess.run(['pip', 'install', '--upgrade', name], capture_output=True, text=True)
         else:
@@ -99,18 +99,14 @@ def upgrade_outdated_packages(verbose=False):
 
         # Check if installation was successful
         if result.returncode == 0:
-            print(f"{Colors.GREEN} [\u2714]{Colors.RESET} Package upgraded successfully: {name}")
+            print(f"{Colors.GREEN} [\u2714]{Colors.RESET} Done.")
         else:
             print(f"{Colors.RED} [x]{Colors.RESET} Failed to upgrade package: {name}. Error: {result.stderr}")
             
-            #for package in packages_to_upgrade:
-            #    name = package['name']
-            #    print(f"{Colors.YELLOW}[>]{Colors.RESET} Upgrading {name}")
-            #    subprocess.run(['pip', 'install', '--upgrade', name], capture_output=not verbose)
 
 def install_missing_dependencies(verbose=False):
 
-    print(f"\n{Colors.BLUE} [*]{Colors.RESET} Checking for missing dependencies...")
+    print(f"\n{Colors.BLUE} [*]{Colors.RESET} Checking for Missing Dependencies..")
 
     with open('.dependencies-tmp.txt', 'w') as f:
         result = subprocess.run(['pip', 'check'], stdout=f, stderr=subprocess.DEVNULL)
@@ -124,9 +120,9 @@ def install_missing_dependencies(verbose=False):
                     dependency = words[3].split(',')[0]
                     dependency_packages_out.write(f"{package} {dependency}\n")
 
-                    print(f"{Colors.RED} [!]{Colors.RESET} {package} requires {dependency} but it is not installed.")
+                    print(f"{Colors.RED} [!]{Colors.RESET} Missing {dependency}, which is required for {package}.")
                     subprocess.run(['pip', 'install', '--upgrade', package], capture_output=True, text=True)
-                    print(f"{Colors.GREEN} [\u2714]{Colors.RESET} {dependency} installed.")
+                    print(f"{Colors.GREEN} [\u2714]{Colors.RESET} {Colors.DGREY}{dependency} installed successfully.{Colors.GREEN}")
 
                 else: # Check if the dependency is outdated
                     package = words[0]
@@ -136,15 +132,15 @@ def install_missing_dependencies(verbose=False):
                     dependency = dependency.split('=')[0] if '=' in dependency else dependency
                     dependency_packages_out.write(f"{package} {dependency}\n")
 
-                    print(f"{Colors.YELLOW} [>]{Colors.RESET} {dependency} is outdated, which is required for {package}.")
+                    print(f"{Colors.YELLOW} [>]{Colors.RESET} Outdated {dependency} found, which is required for {package}.")
                     subprocess.run(['pip', 'install', '--upgrade', package], capture_output=True, text=True)
-                    print(f"{Colors.GREEN} [\u2714]{Colors.RESET} {dependency} upgraded.")
+                    print(f"{Colors.GREEN} [\u2714]{Colors.RESET} {Colors.DGREY}{dependency} upgraded successfully.{Colors.GREEN}")
       
         # Delete the temporary file
         os.remove('.dependencies-tmp.txt')
         os.remove('.dependencies-tmp-2.txt')
           
-        print(f"{Colors.GREEN} [\u2714] All packages are updated to their latest version.{Colors.RESET}")
+        print(f"\n{Colors.GREEN} [\u2714] All packages are updated to their latest version.{Colors.RESET}")
 
 def main():
     verbose = '-v' in sys.argv
@@ -154,9 +150,9 @@ def main():
         print_deprecated_packages()
         return 
 
-    #gather_installed_packages(verbose)
-    #gather_deprecated_packages(verbose)
-    #upgrade_outdated_packages(verbose)
+    gather_installed_packages(verbose)
+    gather_deprecated_packages(verbose)
+    upgrade_outdated_packages(verbose)
     install_missing_dependencies(verbose)
 
 if __name__ == "__main__":
